@@ -17,6 +17,7 @@ def vacancy_2():
 def compare_method_min():
     return CompareMethodMinSalary()
 
+
 @fixture
 def compare_method_max():
     return CompareMethodMaxSalary()

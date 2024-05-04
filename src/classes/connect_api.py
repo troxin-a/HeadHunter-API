@@ -4,14 +4,14 @@ from abc import ABC, abstractmethod
 import requests
 
 
-class AbstractConnect(ABC):
+class AbstractConnectAPI(ABC):
     @staticmethod
     @abstractmethod
     def connect(url):
         pass
 
 
-class Connect(AbstractConnect):
+class ConnectAPI(AbstractConnectAPI):
     """
     Класс для работы с платформой hh.ru. Подключается к API и получает вакансии в формате json
     """

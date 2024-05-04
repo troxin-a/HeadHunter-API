@@ -126,7 +126,7 @@ class Vacancy:
     @classmethod
     def set_compare_method(cls, value):
         if not issubclass(value.__class__, CompareMethod):
-            raise TypeError(f"Указано неверный тип: {type(value)}. Должен быть объект класса CompareMethod")
+            raise TypeError(f"Указан неверный тип: {type(value)}. Должен быть объект класса CompareMethod")
         cls.__compare_method = value
 
     def __eq__(self, other):
