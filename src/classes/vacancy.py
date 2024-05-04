@@ -1,7 +1,12 @@
+import abc
 from abc import ABC, abstractmethod
 
 
 class CompareMethod(ABC):
+    """
+    Абстрактный класс для методов сравнения
+    """
+
     @staticmethod
     @abstractmethod
     def eq(vac1, vac2):
@@ -19,6 +24,10 @@ class CompareMethod(ABC):
 
 
 class CompareMethodMinSalary(CompareMethod):
+    """
+    Метод сравнения по Минимальной зарплате
+    """
+
     @staticmethod
     def eq(vac1, vac2):
         return vac1.salary[0] == vac2.salary[0]
@@ -33,6 +42,10 @@ class CompareMethodMinSalary(CompareMethod):
 
 
 class CompareMethodMaxSalary(CompareMethod):
+    """
+        Метод сравнения по Максимальной зарплате
+    """
+
     @staticmethod
     def eq(vac1, vac2):
         return vac1.salary[1] == vac2.salary[1]
@@ -47,7 +60,11 @@ class CompareMethodMaxSalary(CompareMethod):
 
 
 class Vacancy:
-    compare_method: CompareMethod  # метод сравнения вакансий (по минимальной/максимальной зарплате)
+    """
+    Класс Вакансия, объекты которого можно сравнивать между собой по зарплате
+    Для этого необходимо назначить compare_method
+    """
+    __compare_method: CompareMethod = None  # метод сравнения вакансий (по минимальной/максимальной зарплате)
 
     __slots__: tuple[str, str, tuple, str] = (
         "name",  # название вакансии
@@ -100,18 +117,26 @@ class Vacancy:
             raise TypeError(f"Ожидается dict или None, но не {type(value)}")
 
     @staticmethod
-    def validate_before_compare(obj1, obj2):
+    def validate_before_compare(compare_method, obj1, obj2):
         if not isinstance(obj1, obj2):
             raise TypeError(f"Сравнивать можно только вакансии, но не {type(obj2)}")
+        if compare_method is None:
+            raise RuntimeError("Необходимо назначить метод сравнения по зарплате")
+
+    @classmethod
+    def set_compare_method(cls, value):
+        if not issubclass(value.__class__, CompareMethod):
+            raise TypeError(f"Указано неверный тип: {type(value)}. Должен быть объект класса CompareMethod")
+        cls.__compare_method = value
 
     def __eq__(self, other):
-        self.validate_before_compare(other, self.__class__)
-        return self.compare_method.eq(self, other)
+        self.validate_before_compare(self.__compare_method, other, self.__class__)
+        return self.__compare_method.eq(self, other)
 
     def __lt__(self, other):
-        self.validate_before_compare(other, self.__class__)
-        return self.compare_method.lt(self, other)
+        self.validate_before_compare(self.__compare_method, other, self.__class__)
+        return self.__compare_method.lt(self, other)
 
     def __le__(self, other):
-        self.validate_before_compare(other, self.__class__)
-        return self.compare_method.le(self, other)
+        self.validate_before_compare(self.__compare_method, other, self.__class__)
+        return self.__compare_method.le(self, other)

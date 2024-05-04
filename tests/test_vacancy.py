@@ -59,16 +59,26 @@ def test_lt_wrong_type(vacancy_1):
         vacancy_1 < 1
 
 
-def test_compare_eq_min(vacancy_1, vacancy_2):
-    Vacancy.compare_method = CompareMethodMinSalary
+def test_no_method_compare(vacancy_1, vacancy_2):
+    with pytest.raises(RuntimeError):
+        vacancy_1 == vacancy_2
+
+
+def test_set_compare_method():
+    with pytest.raises(TypeError):
+        Vacancy.set_compare_method(None)
+
+
+def test_compare_eq_min(compare_method_min, vacancy_1, vacancy_2):
+    Vacancy.set_compare_method(compare_method_min)
     assert vacancy_1 == vacancy_2
 
     vacancy_1.salary = {'from': None, 'to': 100}
     assert vacancy_1 != vacancy_2
 
 
-def test_compare_le_min(vacancy_1, vacancy_2):
-    Vacancy.compare_method = CompareMethodMinSalary
+def test_compare_le_min(compare_method_min, vacancy_1, vacancy_2):
+    Vacancy.set_compare_method(compare_method_min)
     assert vacancy_1 <= vacancy_2
     assert vacancy_1 >= vacancy_2
 
@@ -79,24 +89,24 @@ def test_compare_le_min(vacancy_1, vacancy_2):
     assert vacancy_2 >= vacancy_1
 
 
-def test_compare_lt_min(vacancy_1, vacancy_2):
-    Vacancy.compare_method = CompareMethodMinSalary
+def test_compare_lt_min(compare_method_min, vacancy_1, vacancy_2):
+    Vacancy.set_compare_method(compare_method_min)
 
     vacancy_1.salary = {'from': 30, 'to': 100}
     assert vacancy_1 < vacancy_2
     assert vacancy_2 > vacancy_1
 
 
-def test_compare_eq_max(vacancy_1, vacancy_2):
-    Vacancy.compare_method = CompareMethodMaxSalary
+def test_compare_eq_max(compare_method_max, vacancy_1, vacancy_2):
+    Vacancy.set_compare_method(compare_method_max)
     assert vacancy_1 == vacancy_2
 
     vacancy_1.salary = {'from': 50, 'to': None}
     assert vacancy_1 != vacancy_2
 
 
-def test_compare_le_max(vacancy_1, vacancy_2):
-    Vacancy.compare_method = CompareMethodMaxSalary
+def test_compare_le_max(compare_method_max, vacancy_1, vacancy_2):
+    Vacancy.set_compare_method(compare_method_max)
     assert vacancy_1 <= vacancy_2
     assert vacancy_1 >= vacancy_2
 
@@ -108,8 +118,8 @@ def test_compare_le_max(vacancy_1, vacancy_2):
     assert vacancy_1 <= vacancy_2
 
 
-def test_compare_lt_max(vacancy_1, vacancy_2):
-    Vacancy.compare_method = CompareMethodMaxSalary
+def test_compare_lt_max(compare_method_max, vacancy_1, vacancy_2):
+    Vacancy.set_compare_method(compare_method_max)
 
     vacancy_1.salary = {'from': 50, 'to': 90}
     assert vacancy_1 < vacancy_2
