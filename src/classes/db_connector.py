@@ -19,7 +19,9 @@ class AbstractDBConnector(ABC):
 
 class DBConnector(AbstractDBConnector):
     """
-    Класс добавляет вакансии в json по одной, получает данные из файла по указанным критериям
+    Класс добавляет в json вакансии
+    получает данные из файла по указанным критериям,
+    удаляет вакансии по URL
     """
 
     def __init__(self, file_json: str):
@@ -47,12 +49,22 @@ class DBConnector(AbstractDBConnector):
             file.write(json_data)
 
     def add_vacancy(self, vacancy):
+        """
+        Принимает экземпляр класса vacancy,
+        дописывает все атрибуты __slots__ с их значениями в json-файл
+        """
+
         data = self.read()
         item = {attr: vacancy.__getattribute__(attr) for attr in vacancy.__slots__}
         data.append(item)
         self.save(data)
 
     def delete_vacancy(self, vacancy):
+        """
+        Принимает экземпляр класса vacancy,
+        удаляет первую попавшуюся запись, которая соответствует вакансии по ключу URL
+        """
+
         data = self.read()
         item = None
         for vac in data:
@@ -63,14 +75,14 @@ class DBConnector(AbstractDBConnector):
             data.remove(item)
         self.save(data)
 
-    def get_vacancies(self, selections: dict):
+    def get_vacancies(self, selections: dict) -> list:
+        """
+        Принимает словарь, по ключам которого нужно получить вакансии из файла.
+        Возвращает данные в виде списка словарей
+        """
+
         data = self.read()
 
         for key, value in selections.items():
             data = list(filter(lambda x: x[key] == value, data))
         return data
-
-# a = DBConnector("test.json")
-# crit = {}
-# print(a.get_vacancies(crit))
-# a.upload(a.get_vacancies(crit))
