@@ -1,4 +1,3 @@
-import abc
 from abc import ABC, abstractmethod
 
 
@@ -68,13 +67,15 @@ class Vacancy:
 
     __slots__: tuple[str, str, tuple, str] = (
         "name",  # название вакансии
+        "city",  # город
         "url",  # ссылка на вакансию
         "_salary",  # зарплата (минимальная, максимальная)
         "requirements"  # требования
     )
 
-    def __init__(self, name: str, url: str, salary: (dict, None), requirements: str):
+    def __init__(self, name: str, city: str, url: str, salary: (dict, None), requirements: str):
         self.name = name
+        self.city = city
         self.url = url
         self.salary = salary
         self.requirements = requirements
@@ -92,7 +93,7 @@ class Vacancy:
                 pay_to = f"до {self.salary[1]}"
             salary = (f"{pay_from}{pay_to}").strip()
 
-        return f"{self.name}. Зарплата: {salary}"
+        return f"{self.name}, {self.city}. Зарплата: {salary}"
 
     @property
     def salary(self) -> tuple:

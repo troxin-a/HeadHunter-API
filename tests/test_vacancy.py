@@ -6,25 +6,25 @@ from src.classes.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMa
 def test_str(vacancy_1, capsys):
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1. Зарплата: от 50 до 100\n'
+    assert out == 'Вакансия 1, Красноярск. Зарплата: от 50 до 100\n'
     assert err == ''
 
     vacancy_1.salary = {'from': None, 'to': 10}
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1. Зарплата: до 10\n'
+    assert out == 'Вакансия 1, Красноярск. Зарплата: до 10\n'
     assert err == ''
 
     vacancy_1.salary = {'from': 10, 'to': None}
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1. Зарплата: от 10\n'
+    assert out == 'Вакансия 1, Красноярск. Зарплата: от 10\n'
     assert err == ''
 
     vacancy_1.salary = None
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1. Зарплата: не указана\n'
+    assert out == 'Вакансия 1, Красноярск. Зарплата: не указана\n'
     assert err == ''
 
 
