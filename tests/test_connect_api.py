@@ -1,4 +1,4 @@
-from src.classes.connect_api import ConnectAPI
+from src.connect_api import ConnectAPI
 
 
 def test_connect_api():
