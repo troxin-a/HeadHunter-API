@@ -1,7 +1,7 @@
 from pytest import fixture
 
-from src.classes.db_connector import DBConnector
-from src.classes.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
+from src.db_connector import DBConnector
+from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
 
 
 @fixture
@@ -44,8 +44,8 @@ def db_connector():
 @fixture
 def my_data():
     return [
-        {"a": "c", "y": 2},
-        {"a": "c", "y": 6},
-        {"a": "d", "y": 6},
-        {"a": "d", "y": 2}
+        {"a": "Москва", "y": "Профессия"},
+        {"a": "Москва Красноярск", "y": "Профессия"},
+        {"a": "Красноярск", "y": "Профессия"},
+        {"a": "Красноярск", "y": "Ничего"},
     ]

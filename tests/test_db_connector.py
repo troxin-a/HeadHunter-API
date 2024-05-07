@@ -1,7 +1,7 @@
 from os import remove, path
 import json
 
-from src.classes.db_connector import DBConnector
+from src.db_connector import DBConnector
 from config import ROOT_DIR
 
 
@@ -65,8 +65,12 @@ def test_get_vacancies(db_connector, my_data):
     selections = {}
     assert db_connector.get_vacancies(selections) == my_data
 
-    selections = {"a": "c"}
-    assert db_connector.get_vacancies(selections) == [{"a": "c", "y": 2}, {"a": "c", "y": 6}]
+    selections = ["москва"]
+    assert db_connector.get_vacancies(selections) == [{"a": "Москва", "y": "Профессия"},
+                                                      {"a": "Москва Красноярск", "y": "Профессия"}
+                                                      ]
 
-    selections = {"a": "d", "y": 6}
-    assert db_connector.get_vacancies(selections) == [{"a": "d", "y": 6}]
+    selections = ["красноярск", "профессия"]
+    assert db_connector.get_vacancies(selections) == [{"a": "Москва Красноярск", "y": "Профессия"},
+                                                      {"a": "Красноярск", "y": "Профессия"},
+                                                      ]

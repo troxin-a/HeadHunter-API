@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from os import path, remove
+from os import path, mkdir
 import json
+
+from config import ROOT_DIR
 
 
 class AbstractDBConnector(ABC):
@@ -25,10 +27,15 @@ class DBConnector(AbstractDBConnector):
     """
 
     def __init__(self, file_json: str):
-        self.file_json = path.join("data", file_json)
+        self.file_json = path.join(ROOT_DIR, "data", file_json)
 
     def read(self) -> list:
         """Читает json и возвращает данные"""
+
+        data_folder = path.join(ROOT_DIR, "data")
+        if not path.exists(data_folder):
+            mkdir(data_folder)
+
         try:
             with open(self.file_json, "r", encoding="UTF-8") as file:
                 try:
@@ -75,14 +82,31 @@ class DBConnector(AbstractDBConnector):
             data.remove(item)
         self.save(data)
 
-    def get_vacancies(self, selections: dict) -> list:
+    def get_vacancies(self, keys: list) -> list:
         """
-        Принимает словарь, по ключам которого нужно получить вакансии из файла.
+        Принимает список ключевых слов, по которым нужно отобрать вакансии из файла.
         Возвращает данные в виде списка словарей
         """
 
+        def is_valid_from_key(item: dict, key: str):
+            """Определяет, проходит ли вакансия по заданному ключу"""
+            for value in item.values():
+                if isinstance(value, str) and key.lower() in value.lower():
+                    return True
+            return False
+
+        def is_valid_from_keys(item: dict, keys: list):
+            """Определяет, проходится ли вакансия по НАБОРУ ключей"""
+            for key in keys:
+                if not is_valid_from_key(item, key):
+                    return False
+            return True
+
         data = self.read()
 
-        for key, value in selections.items():
-            data = list(filter(lambda x: x[key] == value, data))
-        return data
+        new_data = []
+        for vac in data:
+            if is_valid_from_keys(vac, keys):
+                new_data.append(vac)
+
+        return new_data

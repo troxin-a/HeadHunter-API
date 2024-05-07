@@ -1,31 +1,27 @@
 import pytest
 
-from src.classes.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
+from src.vacancy import Vacancy
 
 
 def test_str(vacancy_1, capsys):
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1, Красноярск. Зарплата: от 50 до 100\n'
-    assert err == ''
+    assert out == 'Вакансия 1. Красноярск, (50, 100)\n'
 
     vacancy_1.salary = {'from': None, 'to': 10}
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1, Красноярск. Зарплата: до 10\n'
-    assert err == ''
+    assert out == 'Вакансия 1. Красноярск, (0, 10)\n'
 
     vacancy_1.salary = {'from': 10, 'to': None}
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1, Красноярск. Зарплата: от 10\n'
-    assert err == ''
+    assert out == 'Вакансия 1. Красноярск, (10, 0)\n'
 
     vacancy_1.salary = None
     print(vacancy_1)
     out, err = capsys.readouterr()
-    assert out == 'Вакансия 1, Красноярск. Зарплата: не указана\n'
-    assert err == ''
+    assert out == 'Вакансия 1. Красноярск, (0, 0)\n'
 
 
 def test_salary_setter(vacancy_1):
@@ -37,6 +33,8 @@ def test_salary_setter(vacancy_1):
     assert vacancy_1.salary == (10, 0)
     vacancy_1.salary = {'to': 20}
     assert vacancy_1.salary == (0, 20)
+    vacancy_1.salary = [10, 20]
+    assert vacancy_1.salary == (10, 20)
 
 
 def test_salary_setter_wrong_type(vacancy_1):
