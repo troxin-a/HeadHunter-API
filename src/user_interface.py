@@ -1,8 +1,8 @@
 from math import ceil
 
-from connect_api import ConnectAPI
-from db_connector import DBConnector
-from vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
+from src.connect_api import ConnectAPI
+from src.db_connector import DBConnector
+from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
 
 
 def download_vacancies(text: str, quantity: int):
