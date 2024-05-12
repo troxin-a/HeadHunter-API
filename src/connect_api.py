@@ -67,4 +67,4 @@ class ConnectAPI(AbstractConnectAPI):
             print(f"Загружено {download_progress}%")
         print("Загрузка завершена\n")
 
-        return data[:quantity]
+        return data
