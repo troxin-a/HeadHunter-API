@@ -1,6 +1,6 @@
 import pytest
 
-from src.vacancy import Vacancy
+from src.vacancy import Vacancy, AttrFormaterFromHHRU, AttrFormaterFromFile
 
 
 def test_str(vacancy_1, capsys):
@@ -122,3 +122,17 @@ def test_compare_lt_max(compare_method_max, vacancy_1, vacancy_2):
     vacancy_1.salary = {'from': 50, 'to': 90}
     assert vacancy_1 < vacancy_2
     assert vacancy_2 > vacancy_1
+
+
+def test_get_attrs_from_hhru(dict_from_hhru):
+    assert AttrFormaterFromHHRU().get_attrs(dict_from_hhru) == (
+    "Питон", "Москва", "url-адрес", {'from': 10, 'to': 20}, "Работать")
+
+
+def test_get_attrs_from_file(dict_from_file):
+    assert AttrFormaterFromFile().get_attrs(dict_from_file) == ("Питон", "Москва", "url-адрес", [10, 20], "Работать")
+
+
+def test_create_vacancies(data_from_file):
+    assert isinstance(Vacancy.create_vacancies(AttrFormaterFromFile(), data_from_file)[0], Vacancy)
+    assert isinstance(Vacancy.create_vacancies(AttrFormaterFromFile(), data_from_file)[1], Vacancy)

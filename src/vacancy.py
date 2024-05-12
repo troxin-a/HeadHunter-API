@@ -58,6 +58,37 @@ class CompareMethodMaxSalary(CompareMethod):
         return vac1.salary[1] <= vac2.salary[1]
 
 
+class AttrFormater(ABC):
+    @staticmethod
+    @abstractmethod
+    def get_attrs(vacancy: dict):
+        pass
+
+
+class AttrFormaterFromHHRU(AttrFormater):
+    @staticmethod
+    def get_attrs(vacancy: dict) -> tuple:
+        name = vacancy.get("name")
+        city = vacancy.get("area").get("name")
+        url = vacancy.get("alternate_url")
+        salary = vacancy.get("salary")
+        requirements = vacancy.get("snippet").get("requirement")
+
+        return name, city, url, salary, requirements
+
+
+class AttrFormaterFromFile(AttrFormater):
+    @staticmethod
+    def get_attrs(vacancy: dict) -> tuple:
+        name = vacancy.get("name")
+        city = vacancy.get("city")
+        url = vacancy.get("url")
+        salary = vacancy.get("_salary")
+        requirements = vacancy.get("requirements")
+
+        return name, city, url, salary, requirements
+
+
 class Vacancy:
     """
     Класс Вакансия, объекты которого можно сравнивать между собой по зарплате
@@ -107,11 +138,25 @@ class Vacancy:
         else:
             raise TypeError(f"Ожидается dict или None, но не {type(value)}")
 
-    @staticmethod
-    def validate_before_compare(compare_method, obj1, obj2):
-        if not isinstance(obj1, obj2):
-            raise TypeError(f"Сравнивать можно только вакансии, но не {type(obj2)}")
-        if compare_method is None:
+    @classmethod
+    def create_vacancies(cls, attr_formater: AttrFormater, data: list) -> list:
+        """
+        Метод создает список объектов класса Vacancy и возвращает его.
+        - Первым аргументом принимает объект класса AttrFormater, выбрав метод формирования атрибутов
+        - Далее json (список словарей с вакансиями)
+        """
+
+        objects = []
+        for vacancy in data:
+            attrs = attr_formater.get_attrs(vacancy)
+            objects.append(cls(*attrs))
+        return objects
+
+    @classmethod
+    def validate_before_compare(cls, other):
+        if not isinstance(other, cls):
+            raise TypeError(f"Сравнивать можно только вакансии, но не {type(other)}")
+        if cls.__compare_method is None:
             raise RuntimeError("Необходимо назначить метод сравнения по зарплате")
 
     @classmethod
@@ -121,13 +166,13 @@ class Vacancy:
         cls.__compare_method = value
 
     def __eq__(self, other):
-        self.validate_before_compare(self.__compare_method, other, self.__class__)
+        self.validate_before_compare(other)
         return self.__compare_method.eq(self, other)
 
     def __lt__(self, other):
-        self.validate_before_compare(self.__compare_method, other, self.__class__)
+        self.validate_before_compare(other)
         return self.__compare_method.lt(self, other)
 
     def __le__(self, other):
-        self.validate_before_compare(self.__compare_method, other, self.__class__)
+        self.validate_before_compare(other)
         return self.__compare_method.le(self, other)
