@@ -1,40 +1,41 @@
 from src.connect_api import ConnectAPI
 from src.db_connector import DBConnector
-from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
+from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary, AttrFormaterFromFile, \
+    AttrFormaterFromHHRU
 
 
-def create_obj_vacancies_from_hhru(data: list) -> list:
-    """
-    Функция создает список объектов класса Vacancy и возвращает его.
-    Принимает json, загруженный с hh.ru и необходимое количество вакансий.
-    """
-
-    objects = []
-    for vacancy in data:
-        name = vacancy.get("name")
-        city = vacancy.get("area").get("name")
-        url = vacancy.get("alternate_url")
-        salary = vacancy.get("salary")
-        requirements = vacancy.get("snippet").get("requirement")
-        objects.append(Vacancy(name, city, url, salary, requirements))
-    return objects
-
-
-def create_obj_vacancies_from_file(data: list) -> list:
-    """
-    Функция создает список объектов класса Vacancy и возвращает его.
-    Принимает чистый json с локальной директории необходимое количество вакансий.
-    """
-
-    objects = []
-    for vacancy in data:
-        name = vacancy.get("name")
-        city = vacancy.get("city")
-        url = vacancy.get("url")
-        salary = vacancy.get("_salary")
-        requirements = vacancy.get("requirements")
-        objects.append(Vacancy(name, city, url, salary, requirements))
-    return objects
+# def create_obj_vacancies_from_hhru(data: list) -> list:
+#     """
+#     Функция создает список объектов класса Vacancy и возвращает его.
+#     Принимает json, загруженный с hh.ru и необходимое количество вакансий.
+#     """
+#
+#     objects = []
+#     for vacancy in data:
+#         name = vacancy.get("name")
+#         city = vacancy.get("area").get("name")
+#         url = vacancy.get("alternate_url")
+#         salary = vacancy.get("salary")
+#         requirements = vacancy.get("snippet").get("requirement")
+#         objects.append(Vacancy(name, city, url, salary, requirements))
+#     return objects
+#
+#
+# def create_obj_vacancies_from_file(data: list) -> list:
+#     """
+#     Функция создает список объектов класса Vacancy и возвращает его.
+#     Принимает чистый json с локальной директории необходимое количество вакансий.
+#     """
+#
+#     objects = []
+#     for vacancy in data:
+#         name = vacancy.get("name")
+#         city = vacancy.get("city")
+#         url = vacancy.get("url")
+#         salary = vacancy.get("_salary")
+#         requirements = vacancy.get("requirements")
+#         objects.append(Vacancy(name, city, url, salary, requirements))
+#     return objects
 
 
 def filter_vacancies(db_connector: DBConnector):
@@ -48,7 +49,7 @@ def filter_vacancies(db_connector: DBConnector):
     filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
     sort_method()
     filtered_vacancies = db_connector.get_vacancies(filter_words)
-    vacancies = create_obj_vacancies_from_file(filtered_vacancies)
+    vacancies = Vacancy.create_vacancies(AttrFormaterFromFile(), filtered_vacancies)
     vacancies.sort(reverse=True)
     print_table(vacancies)
 
@@ -59,7 +60,7 @@ def new_base(db_connector: DBConnector):
     """
 
     to_del = db_connector.get_vacancies([])
-    to_del = create_obj_vacancies_from_file(to_del)
+    to_del = Vacancy.create_vacancies(AttrFormaterFromFile(), to_del)
     for vac in to_del:
         db_connector.delete_vacancy(vac)
     del to_del
@@ -75,7 +76,7 @@ def new_base(db_connector: DBConnector):
 
     api = ConnectAPI()
     vacancies_data = api.get_vacancies_data(find_text, quantity_vac)
-    vacancies = create_obj_vacancies_from_hhru(vacancies_data)
+    vacancies = Vacancy.create_vacancies(AttrFormaterFromHHRU(), vacancies_data)
 
     print("Сохраняю вакансии в файл...")
     for vacancy in vacancies:
