@@ -1,35 +1,9 @@
-from math import ceil
-
 from src.connect_api import ConnectAPI
 from src.db_connector import DBConnector
 from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
 
 
-def download_vacancies(text: str, quantity: int):
-    """
-    Функция загружает вакансии по ключевому слову.
-    Принимает название вакансии и количество.
-    Возвращает вакансии в виде json-списка.
-    """
-    api = ConnectAPI()
-
-    if quantity > 2000:
-        quantity = 2000
-    pages = ceil(abs(quantity) / 20)
-
-    print("\nЗагрузка...")
-    data = []
-    for page in range(pages):
-        items = api.connect(f"https://api.hh.ru/vacancies?area=113&text={text}&page={page}")
-        data.extend(items)
-        download_progress = round(100 / (pages / (page + 1)))
-        print(f"Загружено {download_progress}%")
-    print("Загрузка завершена\n")
-
-    return data
-
-
-def create_obj_vacancies_from_hhru(data: list, quantity: int = None) -> list:
+def create_obj_vacancies_from_hhru(data: list) -> list:
     """
     Функция создает список объектов класса Vacancy и возвращает его.
     Принимает json, загруженный с hh.ru и необходимое количество вакансий.
@@ -43,12 +17,10 @@ def create_obj_vacancies_from_hhru(data: list, quantity: int = None) -> list:
         salary = vacancy.get("salary")
         requirements = vacancy.get("snippet").get("requirement")
         objects.append(Vacancy(name, city, url, salary, requirements))
-    if quantity:
-        return objects[:quantity]
     return objects
 
 
-def create_obj_vacancies_from_file(data: list, quantity: int = None) -> list:
+def create_obj_vacancies_from_file(data: list) -> list:
     """
     Функция создает список объектов класса Vacancy и возвращает его.
     Принимает чистый json с локальной директории необходимое количество вакансий.
@@ -62,8 +34,6 @@ def create_obj_vacancies_from_file(data: list, quantity: int = None) -> list:
         salary = vacancy.get("_salary")
         requirements = vacancy.get("requirements")
         objects.append(Vacancy(name, city, url, salary, requirements))
-    if quantity:
-        return objects[:quantity]
     return objects
 
 
@@ -103,8 +73,9 @@ def new_base(db_connector: DBConnector):
         print("Количество должно быть числом")
         exit()
 
-    vacancies_data = download_vacancies(find_text, quantity_vac)
-    vacancies = create_obj_vacancies_from_hhru(vacancies_data, quantity_vac)
+    api = ConnectAPI()
+    vacancies_data = api.get_vacancies_data(find_text, quantity_vac)
+    vacancies = create_obj_vacancies_from_hhru(vacancies_data)
 
     print("Сохраняю вакансии в файл...")
     for vacancy in vacancies:
