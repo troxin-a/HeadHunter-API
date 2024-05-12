@@ -5,19 +5,9 @@ from src.db_connector import DBConnector
 from config import ROOT_DIR
 
 
-def test_read_no_file():
-    db_connector = DBConnector("to_remove.json")
-    db_connector.file_json = path.join(ROOT_DIR, "tests", "to_remove.json")
-    assert db_connector.read() == []
-    remove(db_connector.file_json)
-
-
-def test_read_empty_file():
-    db_connector = DBConnector("empty.json")
-    db_connector.file_json = path.join(ROOT_DIR, "tests", "empty.json")
-    assert db_connector.read() == []
-    with open(db_connector.file_json, "w", encoding="UTF-8") as file:
-        file.write("")
+def test_initial_data_file(db_connector):
+    data_folder = path.join(ROOT_DIR, "data")
+    assert path.exists(data_folder)
 
 
 def test_read_file(db_connector):
@@ -25,10 +15,10 @@ def test_read_file(db_connector):
     with open(db_connector.file_json, "w", encoding="UTF-8") as file:
         file.write("")
     assert db_connector.read() == []
+    remove(db_connector.file_json)
 
 
 def test_add_vacancy(db_connector, vacancy_1, vacancy_2):
-    db_connector.file_json = path.join(ROOT_DIR, "tests", "test.json")
     with open(db_connector.file_json, "w", encoding="UTF-8") as file:
         file.write("")
 
@@ -42,10 +32,10 @@ def test_add_vacancy(db_connector, vacancy_1, vacancy_2):
         {'name': 'Вакансия 1', 'city': 'Красноярск', 'url': '1', '_salary': [50, 100], 'requirements': ''},
         {'name': 'Вакансия 2', 'city': 'Красноярск', 'url': '2', '_salary': [50, 100], 'requirements': ''}
     ]
+    remove(db_connector.file_json)
 
 
 def test_delete_vacancy(db_connector, vacancy_1, vacancy_2):
-    db_connector.file_json = path.join(ROOT_DIR, "tests", "test.json")
     with open(db_connector.file_json, "w", encoding="UTF-8") as file:
         file.write("")
 
@@ -55,10 +45,10 @@ def test_delete_vacancy(db_connector, vacancy_1, vacancy_2):
     assert db_connector.read() == [
         {'name': 'Вакансия 1', 'city': 'Красноярск', 'url': '1', '_salary': [50, 100], 'requirements': ''},
     ]
+    remove(db_connector.file_json)
 
 
 def test_get_vacancies(db_connector, my_data):
-    db_connector.file_json = path.join(ROOT_DIR, "tests", "test.json")
     with open(db_connector.file_json, "w", encoding="UTF-8") as file:
         data = json.dumps(my_data)
         file.write(data)
@@ -74,3 +64,4 @@ def test_get_vacancies(db_connector, my_data):
     assert db_connector.get_vacancies(selections) == [{"a": "Москва Красноярск", "y": "Профессия"},
                                                       {"a": "Красноярск", "y": "Профессия"},
                                                       ]
+    remove(db_connector.file_json)

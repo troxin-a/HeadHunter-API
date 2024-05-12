@@ -29,23 +29,22 @@ class DBConnector(AbstractDBConnector):
     def __init__(self, file_json: str):
         self.file_json = path.join(ROOT_DIR, "data", file_json)
 
-    def read(self) -> list:
-        """Читает json и возвращает данные"""
-
+        # Создается файл json в папке "data"
         data_folder = path.join(ROOT_DIR, "data")
         if not path.exists(data_folder):
             mkdir(data_folder)
+        if not path.exists(self.file_json):
+            with open(self.file_json, "w", encoding="UTF-8") as file:
+                file.write("[]")
+
+    def read(self) -> list:
+        """Читает json и возвращает данные"""
 
         try:
             with open(self.file_json, "r", encoding="UTF-8") as file:
-                try:
-                    data = json.load(file)
-                except json.JSONDecodeError:
-                    return []  # Если файл пустой, возвращаем пустой список
-        except FileNotFoundError:
-            with open(self.file_json, "w", encoding="UTF-8") as file:
-                file.write("[]")
-            return []  # Если файл отсутствует, создаем его и возвращаем пустой список
+                data = json.load(file)
+        except json.JSONDecodeError:
+            return []  # Если файл поврежден, возвращаем пустой список
         else:
             return data
 
@@ -66,6 +65,13 @@ class DBConnector(AbstractDBConnector):
         data.append(item)
         self.save(data)
 
+    def add_vacancies(self, vacancies: list):
+        """
+        Единовременная запись всех вакансий в файл
+        """
+        for vacancy in vacancies:
+            self.add_vacancy(vacancy)
+
     def delete_vacancy(self, vacancy):
         """
         Принимает экземпляр класса vacancy,
@@ -80,7 +86,7 @@ class DBConnector(AbstractDBConnector):
                 break
         if item:
             data.remove(item)
-        self.save(data)
+            self.save(data)
 
     def get_vacancies(self, keys: list) -> list:
         """
