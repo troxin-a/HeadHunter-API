@@ -4,40 +4,6 @@ from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary,
     AttrFormaterFromHHRU
 
 
-# def create_obj_vacancies_from_hhru(data: list) -> list:
-#     """
-#     Функция создает список объектов класса Vacancy и возвращает его.
-#     Принимает json, загруженный с hh.ru и необходимое количество вакансий.
-#     """
-#
-#     objects = []
-#     for vacancy in data:
-#         name = vacancy.get("name")
-#         city = vacancy.get("area").get("name")
-#         url = vacancy.get("alternate_url")
-#         salary = vacancy.get("salary")
-#         requirements = vacancy.get("snippet").get("requirement")
-#         objects.append(Vacancy(name, city, url, salary, requirements))
-#     return objects
-#
-#
-# def create_obj_vacancies_from_file(data: list) -> list:
-#     """
-#     Функция создает список объектов класса Vacancy и возвращает его.
-#     Принимает чистый json с локальной директории необходимое количество вакансий.
-#     """
-#
-#     objects = []
-#     for vacancy in data:
-#         name = vacancy.get("name")
-#         city = vacancy.get("city")
-#         url = vacancy.get("url")
-#         salary = vacancy.get("_salary")
-#         requirements = vacancy.get("requirements")
-#         objects.append(Vacancy(name, city, url, salary, requirements))
-#     return objects
-
-
 def filter_vacancies(db_connector: DBConnector):
     """
     Функция вызывает методы фильтрации и сортировки.
@@ -79,11 +45,8 @@ def new_base(db_connector: DBConnector):
     vacancies = Vacancy.create_vacancies(AttrFormaterFromHHRU(), vacancies_data)
 
     print("Сохраняю вакансии в файл...")
-    for vacancy in vacancies:
-        db_connector.add_vacancy(vacancy)
+    db_connector.add_vacancies(vacancies)
     print("Вакансии сохранены")
-
-    filter_vacancies(db_connector)
 
 
 def change_start(db_connector: DBConnector):
@@ -96,13 +59,12 @@ def change_start(db_connector: DBConnector):
         print("\n1. Загрузить вакансии с hh.ru")
         print("2. Воспользоваться имеющейся базой")
         method = input("Поле ввода: ")
-        if method == "1":
-            new_base(db_connector)
-        elif method == "2":
-            filter_vacancies(db_connector)
-        else:
+        if method not in ["1", "2"]:
             print("Только 1 или 2")
             continue
+        if method == "1":
+            new_base(db_connector)
+        filter_vacancies(db_connector)
 
 
 def sort_method():
@@ -127,9 +89,12 @@ def print_table(vacancies: list):
     """Выводит итоговую таблицу с отсортированными и отфильтрованными вакансиями"""
 
     # Формирование красивой таблицы по максимальным длинам полей
-    col_1 = len(max(vacancies, key=lambda x: len(x.city)).city) + 2
-    col_4 = len(max(vacancies, key=lambda x: len(x.url)).url) + 2
-    col_5 = len(max(vacancies, key=lambda x: len(x.name)).name) + 2
+    if vacancies:
+        col_1 = len(max(vacancies, key=lambda x: len(x.city)).city) + 2
+        col_4 = len(max(vacancies, key=lambda x: len(x.url)).url) + 2
+        col_5 = len(max(vacancies, key=lambda x: len(x.name)).name) + 2
+    else:
+        col_1, col_4, col_5 = 10, 25, 50
 
     print(f"\n{'Город'.center(col_1)}"
           f"{'З/П от'.ljust(8)}"
