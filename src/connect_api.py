@@ -1,5 +1,4 @@
 import json
-from math import ceil
 from abc import ABC, abstractmethod
 
 import requests
