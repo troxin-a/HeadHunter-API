@@ -50,7 +50,7 @@ class DBConnector(AbstractDBConnector):
 
     def save(self, data: list):
         """Записывает данные в файл json"""
-        json_data = json.dumps(data, ensure_ascii=False)
+        json_data = json.dumps(data, ensure_ascii=False, indent=4)
         with open(self.file_json, "w", encoding="UTF-8") as file:
             file.write(json_data)
 
@@ -61,7 +61,7 @@ class DBConnector(AbstractDBConnector):
         """
 
         data = self.read()
-        item = {attr: vacancy.__getattribute__(attr) for attr in vacancy.__slots__}
+        item = {attr: getattr(vacancy, attr) for attr in vacancy.__slots__}
         data.append(item)
         self.save(data)
 
@@ -69,8 +69,11 @@ class DBConnector(AbstractDBConnector):
         """
         Единовременная запись всех вакансий в файл
         """
+        data = self.read()
         for vacancy in vacancies:
-            self.add_vacancy(vacancy)
+            item_info = {attr: getattr(vacancy, attr) for attr in vacancy.__slots__}
+            data.append(item_info)
+        self.save(data)
 
     def delete_vacancy(self, vacancy):
         """
