@@ -1,4 +1,4 @@
-import json
+import sys
 from abc import ABC, abstractmethod
 
 import requests
@@ -50,9 +50,13 @@ class ConnectAPI(AbstractConnectAPI):
         # Определяем, по сколько вакансий нужно запрашивать в каждой итерации запроса
         pages = [100 for _ in range(quantity // 100)]
         pages.append(quantity % 100)
-        # per_page = iter(pages)
 
-        print("\nЗагрузка...")
+        print("")
+        bar_length = 50
+
+        sys.stdout.write('\r')
+        sys.stdout.write("Загрузка: [{:{}}] {:>3}%"
+                         .format('', bar_length, 0))
         data = []
         for page, per_page in enumerate(pages):
             self.base_query["page"] = page
@@ -62,9 +66,13 @@ class ConnectAPI(AbstractConnectAPI):
             data.extend(items)
 
             # Считаем прогресс и выводим на экран
-            download_progress = round(100 / (len(pages) / (page + 1)))
-            print(f"Загружено {download_progress}%")
-            print(f"Загружено {download_progress}%")
-        print("Загрузка завершена\n")
+            percent = round(100 / (len(pages) / (page + 1)))
+            sys.stdout.write('\r')
+            sys.stdout.write("Загрузка: [{:{}}] {:>3}%"
+                             .format('=' * int(percent / (100.0 / 50)),
+                                     bar_length, int(percent)))
+            sys.stdout.flush()
+
+        print("\n")
 
         return data
