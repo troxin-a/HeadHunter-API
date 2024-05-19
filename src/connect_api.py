@@ -28,7 +28,7 @@ class ConnectAPI(AbstractConnectAPI):
     def connect(self, query: dict) -> list:
         response = requests.get(self.url, query)
         if response.status_code == 200:
-            vacancies = json.loads(response.content)["items"]
+            vacancies = response.json()['items']
             return vacancies
         else:
             return []
@@ -50,19 +50,20 @@ class ConnectAPI(AbstractConnectAPI):
         # Определяем, по сколько вакансий нужно запрашивать в каждой итерации запроса
         pages = [100 for _ in range(quantity // 100)]
         pages.append(quantity % 100)
-        per_page = iter(pages)
+        # per_page = iter(pages)
 
         print("\nЗагрузка...")
         data = []
-        for page in range(len(pages)):
+        for page, per_page in enumerate(pages):
             self.base_query["page"] = page
-            self.base_query["per_page"] = next(per_page)
+            self.base_query["per_page"] = per_page
 
             items = self.connect(self.base_query)
             data.extend(items)
 
             # Считаем прогресс и выводим на экран
             download_progress = round(100 / (len(pages) / (page + 1)))
+            print(f"Загружено {download_progress}%")
             print(f"Загружено {download_progress}%")
         print("Загрузка завершена\n")
 
