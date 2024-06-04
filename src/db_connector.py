@@ -27,21 +27,21 @@ class DBConnector(AbstractDBConnector):
     """
 
     def __init__(self, file_json: str):
-        self.file_json = path.join(ROOT_DIR, "data", file_json)
+        self.__file_json = path.join(ROOT_DIR, "data", file_json)
 
         # Создается файл json в папке "data"
         data_folder = path.join(ROOT_DIR, "data")
         if not path.exists(data_folder):
             mkdir(data_folder)
-        if not path.exists(self.file_json):
-            with open(self.file_json, "w", encoding="UTF-8") as file:
+        if not path.exists(self.__file_json):
+            with open(self.__file_json, "w", encoding="UTF-8") as file:
                 file.write("[]")
 
     def read(self) -> list:
         """Читает json и возвращает данные"""
 
         try:
-            with open(self.file_json, "r", encoding="UTF-8") as file:
+            with open(self.__file_json, "r", encoding="UTF-8") as file:
                 data = json.load(file)
         except json.JSONDecodeError:
             return []  # Если файл поврежден, возвращаем пустой список
@@ -51,7 +51,7 @@ class DBConnector(AbstractDBConnector):
     def save(self, data: list):
         """Записывает данные в файл json"""
         json_data = json.dumps(data, ensure_ascii=False, indent=4)
-        with open(self.file_json, "w", encoding="UTF-8") as file:
+        with open(self.__file_json, "w", encoding="UTF-8") as file:
             file.write(json_data)
 
     def add_vacancy(self, vacancy):

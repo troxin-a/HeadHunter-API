@@ -5,9 +5,11 @@ import requests
 
 
 class AbstractConnectAPI(ABC):
-    @staticmethod
     @abstractmethod
-    def connect(url):
+    def _connect(self, query: dict):
+        pass
+
+    def get_vacancies_data(self, text: str, quantity: int):
         pass
 
 
@@ -17,16 +19,16 @@ class ConnectAPI(AbstractConnectAPI):
     """
 
     def __init__(self):
-        self.base_query = {
+        self.__base_query = {
             'text': "",
             'page': 0,
             'per_page': 0,
             'area': 113,
         }
-        self.url = "https://api.hh.ru/vacancies"
+        self.__url = "https://api.hh.ru/vacancies"
 
-    def connect(self, query: dict) -> list:
-        response = requests.get(self.url, query)
+    def _connect(self, query: dict) -> list:
+        response = requests.get(self.__url, query)
         if response.status_code == 200:
             vacancies = response.json()['items']
             return vacancies
@@ -41,7 +43,7 @@ class ConnectAPI(AbstractConnectAPI):
         """
 
         # В базовый словарь параметров запроса пишем поисковую вакансию
-        self.base_query["text"] = text
+        self.__base_query["text"] = text
 
         if quantity > 2000:
             quantity = 2000
@@ -59,10 +61,10 @@ class ConnectAPI(AbstractConnectAPI):
                          .format('', bar_length, 0))
         data = []
         for page, per_page in enumerate(pages):
-            self.base_query["page"] = page
-            self.base_query["per_page"] = per_page
+            self.__base_query["page"] = page
+            self.__base_query["per_page"] = per_page
 
-            items = self.connect(self.base_query)
+            items = self._connect(self.__base_query)
             data.extend(items)
 
             # Считаем прогресс и выводим на экран

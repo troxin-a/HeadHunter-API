@@ -1,11 +1,11 @@
 def test_connect_api(api_obj):
-    result = api_obj.connect("https://api.hh.ru/vacancies")
+    result = api_obj._connect("https://api.hh.ru/vacancies")
     assert isinstance(result, list)
     assert len(result) > 0
 
 
 def test_no_connect_api(api_obj):
-    result = api_obj.connect("https://api.hh.ru")
+    result = api_obj._connect("https://api.hh.ru")
     assert isinstance(result, list)
 
 
