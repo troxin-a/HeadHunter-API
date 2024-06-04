@@ -1,7 +1,12 @@
 from src.connect_api import ConnectAPI
 from src.db_connector import DBConnector
-from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary, AttrFormaterFromFile, \
-    AttrFormaterFromHHRU
+from src.vacancy import (
+    Vacancy,
+    CompareMethodMinSalary,
+    CompareMethodMaxSalary,
+    AttrFormaterFromFile,
+    AttrFormaterFromHHRU,
+)
 
 
 def filter_vacancies(db_connector: DBConnector):
@@ -96,14 +101,15 @@ def print_table(vacancies: list):
     else:
         col_1, col_4, col_5 = 10, 25, 50
 
-    print(f"\n{'Город'.center(col_1)}"
-          f"{'З/П от'.ljust(8)}"
-          f"{'З/П до'.ljust(8)}"
-          f"{'Ссылка'.center(col_4)}"
-          f"{'Наименование'.center(col_5)}"
-          f"{'Требования'}"
-          )
-    print("_" * 200)
+    print(
+        f"\n{'Город'.center(col_1)}"
+        f"{'З/П от'.ljust(8)}"
+        f"{'З/П до'.ljust(8)}"
+        f"{'Ссылка'.center(col_4)}"
+        f"{'Наименование'.center(col_5)}"
+        #   f"{'Требования'}"
+    )
+    print("_" * 130)
 
     for vacancy in vacancies:
         pay_from = "---"
@@ -114,10 +120,10 @@ def print_table(vacancies: list):
         if vacancy.salary[1] > 0:
             pay_to = str(vacancy.salary[1])
 
-        city = vacancy.city.ljust(col_1, ' ')
-        pay_from = pay_from.ljust(8, ' ')
-        pay_to = pay_to.ljust(8, ' ')
-        url = vacancy.url.ljust(col_4, ' ')
-        name = vacancy.name.ljust(col_5, ' ')
-        requirements = vacancy.requirements
-        print(city, pay_from, pay_to, url, name, requirements, sep="")
+        city = vacancy.city.ljust(col_1, " ")
+        pay_from = pay_from.ljust(8, " ")
+        pay_to = pay_to.ljust(8, " ")
+        url = vacancy.url.ljust(col_4, " ")
+        name = vacancy.name.ljust(col_5, " ")
+        # requirements = vacancy.requirements
+        print(city, pay_from, pay_to, url, name, sep="")

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 
 class CompareMethod(ABC):
@@ -42,7 +43,7 @@ class CompareMethodMinSalary(CompareMethod):
 
 class CompareMethodMaxSalary(CompareMethod):
     """
-        Метод сравнения по Максимальной зарплате
+    Метод сравнения по Максимальной зарплате
     """
 
     @staticmethod
@@ -94,17 +95,27 @@ class Vacancy:
     Класс Вакансия, объекты которого можно сравнивать между собой по зарплате
     Для этого необходимо назначить compare_method
     """
-    __compare_method: CompareMethod = None  # метод сравнения вакансий (по минимальной/максимальной зарплате)
+
+    __compare_method: CompareMethod = (
+        None  # метод сравнения вакансий (по минимальной/максимальной зарплате)
+    )
 
     __slots__: tuple[str, str, tuple, str] = (
         "name",  # название вакансии
         "city",  # город
         "url",  # ссылка на вакансию
         "_salary",  # зарплата (минимальная, максимальная)
-        "requirements"  # требования
+        "requirements",  # требования
     )
 
-    def __init__(self, name: str, city: str, url: str, salary: (dict, None), requirements: str):
+    def __init__(
+        self,
+        name: str,
+        city: str,
+        url: str,
+        salary: Union[dict, None],
+        requirements: str,
+    ):
         self.name = name
         self.city = city
         self.url = url
@@ -119,7 +130,7 @@ class Vacancy:
         return self._salary
 
     @salary.setter
-    def salary(self, value: (dict, None)):
+    def salary(self, value: Union[dict, None]):
         if isinstance(value, dict):
             if value.setdefault("from", 0):
                 salary_from = value["from"]
@@ -162,7 +173,9 @@ class Vacancy:
     @classmethod
     def set_compare_method(cls, value):
         if not issubclass(value.__class__, CompareMethod):
-            raise TypeError(f"Указан неверный тип: {type(value)}. Должен быть объект класса CompareMethod")
+            raise TypeError(
+                f"Указан неверный тип: {type(value)}. Должен быть объект класса CompareMethod"
+            )
         cls.__compare_method = value
 
     def __eq__(self, other):

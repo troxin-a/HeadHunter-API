@@ -20,20 +20,19 @@ class ConnectAPI(AbstractConnectAPI):
 
     def __init__(self):
         self.__base_query = {
-            'text': "",
-            'page': 0,
-            'per_page': 0,
-            'area': 113,
+            "text": "",
+            "page": 0,
+            "per_page": 0,
+            "area": 113,
         }
         self.__url = "https://api.hh.ru/vacancies"
 
     def _connect(self, query: dict) -> list:
-        response = requests.get(self.__url, query)
+        response = requests.get(self.__url, query, timeout=10)
         if response.status_code == 200:
-            vacancies = response.json()['items']
+            vacancies = response.json()["items"]
             return vacancies
-        else:
-            return []
+        return []
 
     def get_vacancies_data(self, text: str, quantity: int):
         """
@@ -56,9 +55,8 @@ class ConnectAPI(AbstractConnectAPI):
         print("")
         bar_length = 50
 
-        sys.stdout.write('\r')
-        sys.stdout.write("Загрузка: [{:{}}] {:>3}%"
-                         .format('', bar_length, 0))
+        sys.stdout.write("\r")
+        sys.stdout.write("Загрузка: [{:{}}] {:>3}%".format("", bar_length, 0))
         data = []
         for page, per_page in enumerate(pages):
             self.__base_query["page"] = page
@@ -69,10 +67,12 @@ class ConnectAPI(AbstractConnectAPI):
 
             # Считаем прогресс и выводим на экран
             percent = round(100 / (len(pages) / (page + 1)))
-            sys.stdout.write('\r')
-            sys.stdout.write("Загрузка: [{:{}}] {:>3}%"
-                             .format('=' * int(percent / (100.0 / 50)),
-                                     bar_length, int(percent)))
+            sys.stdout.write("\r")
+            sys.stdout.write(
+                "Загрузка: [{:{}}] {:>3}%".format(
+                    "=" * int(percent / (100.0 / 50)), bar_length, int(percent)
+                )
+            )
             sys.stdout.flush()
 
         print("\n")

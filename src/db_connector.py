@@ -91,7 +91,7 @@ class DBConnector(AbstractDBConnector):
             data.remove(item)
             self.save(data)
 
-    def get_vacancies(self, keys: list) -> list:
+    def get_vacancies(self, selections: list) -> list:
         """
         Принимает список ключевых слов, по которым нужно отобрать вакансии из файла.
         Возвращает данные в виде списка словарей
@@ -115,7 +115,7 @@ class DBConnector(AbstractDBConnector):
 
         new_data = []
         for vac in data:
-            if is_valid_from_keys(vac, keys):
+            if is_valid_from_keys(vac, selections):
                 new_data.append(vac)
 
         return new_data
