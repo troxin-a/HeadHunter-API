@@ -34,4 +34,10 @@ def get_settings():
         print("Not set dbname")
         exit()
 
-    return {item[0]: item[1] for item in config.items("Database")}
+    if not config.has_section("CompanyID"):
+        print("No section CompanyID")
+        exit()
+
+    list_id = config["CompanyID"]["list_id"].split(" ")
+
+    return {item[0]: item[1] for item in config.items("Database")}, list_id

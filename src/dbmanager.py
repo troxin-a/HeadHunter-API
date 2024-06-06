@@ -1,7 +1,5 @@
 import psycopg2
 
-from vacancy import Vacancy
-
 
 class DBManager:
 
@@ -159,7 +157,7 @@ class DBManager:
         """
         avg_salary = self.get_avg_salary()
         query = f"""
-                SELECT company_id, vacancy_name, salary_from, salary_to, url
+                SELECT company_name, vacancy_name, salary_from, salary_to, url
                 FROM vacancies
                 JOIN companies USING(company_id)
                 JOIN (
@@ -176,8 +174,9 @@ class DBManager:
         Получает список всех вакансий, в названии которых содержатся переданные в метод слова, например python.
         """
         query = f"""
-                SELECT company_id, vacancy_name, salary_from, salary_to, url
+                SELECT company_name, vacancy_name, salary_from, salary_to, url
                 FROM vacancies
-                WHERE vacancy_name LIKE '%{word}%'
+                JOIN companies USING(company_id)
+                WHERE LOWER(vacancy_name) LIKE LOWER('%{word}%')
                 """
         return self.__request_db(query)
