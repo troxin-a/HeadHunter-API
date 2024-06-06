@@ -5,9 +5,14 @@ import requests
 
 
 class AbstractConnectAPI(ABC):
-    @staticmethod
     @abstractmethod
-    def connect(url):
+    def _connect(self, url: str, query: dict = None):
+        pass
+
+    def _get_info_about_employer(self, employer_id: int):
+        pass
+
+    def get_vacancies_data(self, employer_id: int):
         pass
 
 
@@ -17,60 +22,79 @@ class ConnectAPI(AbstractConnectAPI):
     """
 
     def __init__(self):
-        self.base_query = {
-            'text': "",
-            'page': 0,
-            'per_page': 0,
-            'area': 113,
+        self.__base_query = {
+            "employer_id": 0,
+            "page": 0,
+            "per_page": 0,
+            "area": 113,
         }
-        self.url = "https://api.hh.ru/vacancies"
+        self.__url = "https://api.hh.ru/vacancies"
 
-    def connect(self, query: dict) -> list:
-        response = requests.get(self.url, query)
+    def _connect(self, url: str, query: dict = None) -> list:
+        if query is None:
+            query = {}
+        response = requests.get(url, query, timeout=10)
         if response.status_code == 200:
-            vacancies = response.json()['items']
-            return vacancies
-        else:
-            return []
+            data = response.json()
+            return data
+        return []
 
-    def get_vacancies_data(self, text: str, quantity: int):
+    def _get_info_about_employer(self, employer_id: int):
         """
-        Метод загружает вакансии по ключевому слову.
-        Принимает название вакансии и количество.
-        Возвращает вакансии в виде json-списка.
+        Получает наименование компании и количество вакансий по его id
+        """
+        url = f"https://api.hh.ru/employers/{employer_id}"
+        data = self._connect(url)
+
+        # Если не находит вакансию, выходим
+        try:
+            name = data["name"]
+            quantity = data["open_vacancies"]
+        except Exception:
+            return None, None
+
+        return name, quantity
+
+    def get_vacancies_data(self, employer_id: int):
+        """
+        Метод загружает вакансии по id работодателя.
+        Принимает название вакансии.
+        Возвращает вакансии в виде словарей.
         """
 
-        # В базовый словарь параметров запроса пишем поисковую вакансию
-        self.base_query["text"] = text
+        # В базовый словарь параметров запроса пишем поисковую компанию
+        self.__base_query["employer_id"] = employer_id
 
-        if quantity > 2000:
-            quantity = 2000
-        quantity = abs(quantity)
+        name, quantity = self._get_info_about_employer(employer_id)
+        if not name:
+            return
 
         # Определяем, по сколько вакансий нужно запрашивать в каждой итерации запроса
         pages = [100 for _ in range(quantity // 100)]
         pages.append(quantity % 100)
 
         print("")
+        print(f"Компания {name}. Активных вакансий: {quantity}")
         bar_length = 50
 
-        sys.stdout.write('\r')
-        sys.stdout.write("Загрузка: [{:{}}] {:>3}%"
-                         .format('', bar_length, 0))
+        sys.stdout.write("\r")
+        sys.stdout.write("Загрузка: [{:{}}] {:>3}%".format("", bar_length, 0))
         data = []
         for page, per_page in enumerate(pages):
-            self.base_query["page"] = page
-            self.base_query["per_page"] = per_page
+            self.__base_query["page"] = page
+            self.__base_query["per_page"] = per_page
 
-            items = self.connect(self.base_query)
+            items = self._connect(self.__url, self.__base_query)["items"]
             data.extend(items)
 
             # Считаем прогресс и выводим на экран
             percent = round(100 / (len(pages) / (page + 1)))
-            sys.stdout.write('\r')
-            sys.stdout.write("Загрузка: [{:{}}] {:>3}%"
-                             .format('=' * int(percent / (100.0 / 50)),
-                                     bar_length, int(percent)))
+            sys.stdout.write("\r")
+            sys.stdout.write(
+                "Загрузка: [{:{}}] {:>3}%".format(
+                    "=" * int(percent / (100.0 / 50)), bar_length, int(percent)
+                )
+            )
             sys.stdout.flush()
 
         print("\n")

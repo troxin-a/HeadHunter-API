@@ -1,20 +1,24 @@
-from src.db_connector import DBConnector
-from src.user_interface import change_start, filter_vacancies
+from src.dbmanager import DBManager
+from src.user_interface import change_start, change_method_DBManager
+from src.settings import get_settings
 
-db_connector = DBConnector("vacancies.json")
+
+settings = get_settings()[0]
+list_employers = get_settings()[1]
+db_manager = DBManager(settings)
 
 
 def user_interaction():
     print("Добро пожаловать в поиск вакансий на hh.ru")
 
-    change_start(db_connector)
+    change_start(db_manager, list_employers)
 
     to_exit = ""
     while to_exit == "":
         print("\nНажмите Enter для продолжения.")
         to_exit = input("Для выхода введите любой символ: ")
         if to_exit == "":
-            filter_vacancies(db_connector)
+            change_method_DBManager(db_manager)
 
 
 if __name__ == "__main__":

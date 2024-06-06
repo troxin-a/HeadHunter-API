@@ -126,11 +126,11 @@ def test_compare_lt_max(compare_method_max, vacancy_1, vacancy_2):
 
 def test_get_attrs_from_hhru(dict_from_hhru):
     assert AttrFormaterFromHHRU().get_attrs(dict_from_hhru) == (
-    "Питон", "Москва", "url-адрес", {'from': 10, 'to': 20}, "Работать")
+    "1", "Яндекс", "Разработчик", "Москва", "url-адрес", {'from': 10, 'to': 20}, "Работать")
 
 
 def test_get_attrs_from_file(dict_from_file):
-    assert AttrFormaterFromFile().get_attrs(dict_from_file) == ("Питон", "Москва", "url-адрес", [10, 20], "Работать")
+    assert AttrFormaterFromFile().get_attrs(dict_from_file) == ("1", "Яндекс", "Разработчик", "Москва", "url-адрес", [10, 20], "Работать")
 
 
 def test_create_vacancies(data_from_file):

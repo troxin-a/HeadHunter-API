@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 
 class CompareMethod(ABC):
@@ -42,7 +43,7 @@ class CompareMethodMinSalary(CompareMethod):
 
 class CompareMethodMaxSalary(CompareMethod):
     """
-        Метод сравнения по Максимальной зарплате
+    Метод сравнения по Максимальной зарплате
     """
 
     @staticmethod
@@ -68,25 +69,47 @@ class AttrFormater(ABC):
 class AttrFormaterFromHHRU(AttrFormater):
     @staticmethod
     def get_attrs(vacancy: dict) -> tuple:
-        name = vacancy.get("name")
-        city = vacancy.get("area").get("name")
+        company_id = vacancy["employer"].get("id")
+        company_name = vacancy["employer"].get("name").replace('\'', '\'\'')
+        vacancy_name = vacancy.get("name").replace('\'', '\'\'')
+        city = vacancy["area"].get("name").replace('\'', '\'\'')
         url = vacancy.get("alternate_url")
         salary = vacancy.get("salary")
-        requirements = vacancy.get("snippet").get("requirement")
+        requirements = vacancy["snippet"].get("requirement")
+        if requirements:
+            requirements = requirements.replace('\'', '\'\'')
 
-        return name, city, url, salary, requirements
+        return company_id, company_name, vacancy_name, city, url, salary, requirements
 
 
 class AttrFormaterFromFile(AttrFormater):
     @staticmethod
     def get_attrs(vacancy: dict) -> tuple:
-        name = vacancy.get("name")
+        company_id = vacancy.get("company_id")
+        company_name = vacancy.get("company_name")
+        vacancy_name = vacancy.get("vacancy_name")
         city = vacancy.get("city")
         url = vacancy.get("url")
         salary = vacancy.get("_salary")
         requirements = vacancy.get("requirements")
 
-        return name, city, url, salary, requirements
+        return company_id, company_name, vacancy_name, city, url, salary, requirements
+
+
+class AttrFormaterFromSQL(AttrFormater):
+    @staticmethod
+    def get_attrs(vacancy: dict) -> tuple:
+        company_id = vacancy.get("company_id")
+        company_name = vacancy.get("company_name")
+        vacancy_name = vacancy.get("vacancy_name")
+        city = vacancy.get("city")
+        url = vacancy.get("url")
+        salary_from = vacancy.get("salary_from")
+        salary_to = vacancy.get("salary_to")
+        salary = (salary_from, salary_to)
+        requirements = vacancy.get("requirements")
+
+        return company_id, company_name, vacancy_name, city, url, salary, requirements
 
 
 class Vacancy:
@@ -94,32 +117,48 @@ class Vacancy:
     Класс Вакансия, объекты которого можно сравнивать между собой по зарплате
     Для этого необходимо назначить compare_method
     """
-    __compare_method: CompareMethod = None  # метод сравнения вакансий (по минимальной/максимальной зарплате)
+
+    __compare_method: CompareMethod = (
+        None  # метод сравнения вакансий (по минимальной/максимальной зарплате)
+    )
 
     __slots__: tuple[str, str, tuple, str] = (
-        "name",  # название вакансии
+        "company_id",  # id компании
+        "company_name",  # Название компании
+        "vacancy_name",  # название вакансии
         "city",  # город
         "url",  # ссылка на вакансию
         "_salary",  # зарплата (минимальная, максимальная)
-        "requirements"  # требования
+        "requirements",  # требования
     )
 
-    def __init__(self, name: str, city: str, url: str, salary: (dict, None), requirements: str):
-        self.name = name
+    def __init__(
+        self,
+        company_id: int,
+        company_name: str,
+        vacancy_name: str,
+        city: str,
+        url: str,
+        salary: Union[dict, None],
+        requirements: str,
+    ):
+        self.company_id = company_id
+        self.company_name = company_name
+        self.vacancy_name = vacancy_name
         self.city = city
         self.url = url
         self.salary = salary
         self.requirements = requirements
 
     def __str__(self):
-        return f"{self.name}. {self.city}, {self._salary}"
+        return f"{self.vacancy_name}. {self.city}, {self._salary}"
 
     @property
     def salary(self) -> tuple:
         return self._salary
 
     @salary.setter
-    def salary(self, value: (dict, None)):
+    def salary(self, value: Union[dict, None]):
         if isinstance(value, dict):
             if value.setdefault("from", 0):
                 salary_from = value["from"]
@@ -162,7 +201,9 @@ class Vacancy:
     @classmethod
     def set_compare_method(cls, value):
         if not issubclass(value.__class__, CompareMethod):
-            raise TypeError(f"Указан неверный тип: {type(value)}. Должен быть объект класса CompareMethod")
+            raise TypeError(
+                f"Указан неверный тип: {type(value)}. Должен быть объект класса CompareMethod"
+            )
         cls.__compare_method = value
 
     def __eq__(self, other):
