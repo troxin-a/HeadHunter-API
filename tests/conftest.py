@@ -1,18 +1,17 @@
 from pytest import fixture
 
 from src.connect_api import ConnectAPI
-from src.db_connector import DBConnector
 from src.vacancy import Vacancy, CompareMethodMinSalary, CompareMethodMaxSalary
 
 
 @fixture
 def vacancy_1():
-    return Vacancy("Вакансия 1", "Красноярск", "1", {'from': 50, 'to': 100}, "")
+    return Vacancy("1", "Яндекс", "Вакансия 1", "Красноярск", "1", {'from': 50, 'to': 100}, "")
 
 
 @fixture
 def vacancy_2():
-    return Vacancy("Вакансия 2", "Красноярск", "2", {'from': 50, 'to': 100}, "")
+    return Vacancy("2", "2ГИС", "Вакансия 2", "Красноярск", "2", {'from': 50, 'to': 100}, "")
 
 
 @fixture
@@ -25,9 +24,6 @@ def compare_method_max():
     return CompareMethodMaxSalary()
 
 
-@fixture
-def db_connector():
-    return DBConnector("test.json")
 
 
 @fixture
@@ -43,7 +39,11 @@ def my_data():
 @fixture
 def dict_from_hhru():
     vacancy = {
-        "name": "Питон",
+        "employer": {
+                    "id": "1",
+                    "name": "Яндекс"
+                },
+        "name": "Разработчик",
         "area": {"name": "Москва"},
         "alternate_url": "url-адрес",
         "salary": {"from": 10, "to": 20},
@@ -55,7 +55,9 @@ def dict_from_hhru():
 @fixture
 def dict_from_file():
     vacancy = {
-        "name": "Питон",
+        "company_id": "1",
+        "company_name": "Яндекс",        
+        "vacancy_name": "Разработчик",
         "city": "Москва",
         "url": "url-адрес",
         "_salary": [10, 20],
