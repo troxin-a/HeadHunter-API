@@ -1,60 +1,31 @@
 from src.connect_api import ConnectAPI
-from src.db_connector import DBConnector
+from src.dbmanager import DBManager
 from src.vacancy import (
     Vacancy,
     CompareMethodMinSalary,
     CompareMethodMaxSalary,
-    AttrFormaterFromFile,
     AttrFormaterFromHHRU,
 )
 
 
-def filter_vacancies(db_connector: DBConnector):
-    """
-    Функция вызывает методы фильтрации и сортировки.
-    Выводит итоговую таблицу на экран.
-    Принимает объект класса DBConnector
-    """
-
-    print()
-    filter_words = input("Введите ключевые слова для фильтрации вакансий: ").split()
-    sort_method()
-    filtered_vacancies = db_connector.get_vacancies(filter_words)
-    vacancies = Vacancy.create_vacancies(AttrFormaterFromFile(), filtered_vacancies)
-    vacancies.sort(reverse=True)
-    print_table(vacancies)
-
-
-def new_base(db_connector: DBConnector):
+def new_base(db_manager: DBManager, list_employers: list):
     """
     Функция запускает метод загрузки вакансий (по наименованию) в файл
     """
 
-    to_del = db_connector.get_vacancies([])
-    to_del = Vacancy.create_vacancies(AttrFormaterFromFile(), to_del)
-    for vac in to_del:
-        db_connector.delete_vacancy(vac)
-    del to_del
-
-    find_text = input("\nВведите название вакансии: ")
-    quantity_vac = input("Сколько вакансий загрузить? До 2000: ")
-
-    try:
-        quantity_vac = int(quantity_vac)
-    except ValueError:
-        print("Количество должно быть числом")
-        exit()
+    db_manager.clear_db()
 
     api = ConnectAPI()
-    vacancies_data = api.get_vacancies_data(find_text, quantity_vac)
-    vacancies = Vacancy.create_vacancies(AttrFormaterFromHHRU(), vacancies_data)
+    for employer_id in list_employers:
+        vacancies_data = api.get_vacancies_data(employer_id)
+        if vacancies_data:
+            vacancies = Vacancy.create_vacancies(AttrFormaterFromHHRU(), vacancies_data)
+            db_manager.add_vacancies(vacancies)
+        else:
+            continue
 
-    print("Сохраняю вакансии в файл...")
-    db_connector.add_vacancies(vacancies)
-    print("Вакансии сохранены")
 
-
-def change_start(db_connector: DBConnector):
+def change_start(db_manager: DBManager, list_employers):
     """
     Функция с диалогом: начать работу с имеющейся базой или загрузить все заново
     """
@@ -68,8 +39,8 @@ def change_start(db_connector: DBConnector):
             print("Только 1 или 2")
             continue
         if method == "1":
-            new_base(db_connector)
-        filter_vacancies(db_connector)
+            new_base(db_manager, list_employers)
+        change_method_DBManager(db_manager)
 
 
 def sort_method():
@@ -91,39 +62,79 @@ def sort_method():
 
 
 def print_table(vacancies: list):
-    """Выводит итоговую таблицу с отсортированными и отфильтрованными вакансиями"""
+    """Выводит итоговую таблицу"""
 
     # Формирование красивой таблицы по максимальным длинам полей
     if vacancies:
-        col_1 = len(max(vacancies, key=lambda x: len(x.city)).city) + 2
-        col_4 = len(max(vacancies, key=lambda x: len(x.url)).url) + 2
-        col_5 = len(max(vacancies, key=lambda x: len(x.name)).name) + 2
+        col_0 = len(max(vacancies, key=lambda x: len(x[0]))[0]) + 2
+        col_1 = len(max(vacancies, key=lambda x: len(x[1]))[1]) + 2
+        col_4 = len(max(vacancies, key=lambda x: len(x[4]))[4]) + 2
     else:
-        col_1, col_4, col_5 = 10, 25, 50
+        col_0, col_1, col_4 = 10, 25, 50
 
     print(
-        f"\n{'Город'.center(col_1)}"
+        f"\n{'Компния'.center(col_0)}"
         f"{'З/П от'.ljust(8)}"
         f"{'З/П до'.ljust(8)}"
+        f"{'Вакансия'.center(col_1)}"
         f"{'Ссылка'.center(col_4)}"
-        f"{'Наименование'.center(col_5)}"
-        #   f"{'Требования'}"
     )
-    print("_" * 130)
+    print("_" * 160)
 
     for vacancy in vacancies:
         pay_from = "---"
         pay_to = "---"
 
-        if vacancy.salary[0] > 0:
-            pay_from = str(vacancy.salary[0])
-        if vacancy.salary[1] > 0:
-            pay_to = str(vacancy.salary[1])
+        if vacancy[2] > 0:
+            pay_from = str(vacancy[2])
+        if vacancy[3] > 0:
+            pay_to = str(vacancy[3])
 
-        city = vacancy.city.ljust(col_1, " ")
+        company = vacancy[0].ljust(col_0, " ")
+        name = vacancy[1].ljust(col_1, " ")
         pay_from = pay_from.ljust(8, " ")
         pay_to = pay_to.ljust(8, " ")
-        url = vacancy.url.ljust(col_4, " ")
-        name = vacancy.name.ljust(col_5, " ")
-        # requirements = vacancy.requirements
-        print(city, pay_from, pay_to, url, name, sep="")
+        url = vacancy[4].ljust(col_4, " ")
+
+        print(company, pay_from, pay_to, name, url, sep="")
+
+
+def get_key_word(db_manager: DBManager):
+    print()
+    word = input("Введите ключевое слово для фильтрации вакансий: ")
+    vacancies = db_manager.get_vacancies_with_keyword(word)
+    print_table(vacancies)
+
+
+def change_method_DBManager(db_manager: DBManager):
+    change = "9"
+    while change not in "12345":
+        print(
+            "\n"
+            + "1. Получить список всех компаний и количество вакансий у каждой компании\n"
+            + "2. Получить список всех вакансий\n"
+            + "3. Получить среднюю зарплату по вакансиям\n"
+            + "4. Получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n"
+            + "5. Получить список всех вакансий по ключевым словам\n"
+        )
+        change = input("Поле ввода: ")
+        if change not in "12345":
+            print("Только от 1 до 5")
+            continue
+
+    print()
+    match change:
+        case "1":
+            companies = db_manager.get_companies_and_vacancies_count()
+            for company in companies:
+                print(f"{company[0].ljust(20)}{company[1]} вакансий")
+        case "2":
+            vacancies = db_manager.get_all_vacancies()
+            print_table(vacancies)
+        case "3":
+            print(round(db_manager.get_avg_salary()))
+        case "4":
+            vacancies = db_manager.get_vacancies_with_higher_salary()
+            print_table(vacancies)
+        case "5":
+            get_key_word(db_manager)
