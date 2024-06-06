@@ -1,5 +1,7 @@
 import psycopg2
 
+from vacancy import Vacancy
+
 
 class DBManager:
 
@@ -66,6 +68,50 @@ class DBManager:
                     requirements text
                 );
                 """
+        self.__request_db(query)
+
+    def clear_db(self):
+        query = """
+                TRUNCATE vacancies RESTART IDENTITY;
+                TRUNCATE companies CASCADE;
+                """
+        self.__request_db(query)
+
+    def add_vacancies(self, vacancies: list):
+        """
+        Принимает список экземпляров класса vacancy,
+        Записывает все атрибуты __slots__ с их значениями в 2 таблицы: companies и vacancies
+        """
+
+        query = ""
+        for vacancy in vacancies:
+            query += f"""
+                    INSERT INTO companies
+                    SELECT
+                    '{vacancy.company_id}', '{vacancy.company_name}'
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM companies WHERE company_id = '{vacancy.company_id}'
+                    );
+
+                    INSERT INTO vacancies (company_id, vacancy_name, city, url, salary_from, salary_to, requirements)
+                    VALUES (
+                        '{vacancy.company_id}',
+                        '{vacancy.vacancy_name}',
+                        '{vacancy.city}',
+                        '{vacancy.url}',
+                        '{vacancy.salary[0]}',
+                        '{vacancy.salary[1]}',
+                        '{vacancy.requirements}'
+                    );
+                    """
+
+        self.__request_db(query)
+
+    def delete_vacancy(self, url: str):
+        """
+        Удаляет запись из таблицы vacancies по url-адресу
+        """
+        query = f"DELETE FROM vacancies WHERE url = '{url}';"
         self.__request_db(query)
 
     def get_companies_and_vacancies_count(self) -> list:
