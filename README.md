@@ -18,7 +18,7 @@ _При запуске программы пользователю предла�
 
 <h3>Установка:</h3>
 <code>git clone https://github.com/troxin1988/HeadHunter_API.git</code></br>
-<code>cd hhru</code></br>
+<code>cd HeadHunter_API</code></br>
 <code>poetry shell</code></br>
 <code>poetry install</code>
 
