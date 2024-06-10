@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "HeadHunter_API"
+name = "HeadHunter-API"
 version = "0.1.0"
 description = ""
 authors = ["Anton Pashinov <troxin1988@gmail.com>"]
